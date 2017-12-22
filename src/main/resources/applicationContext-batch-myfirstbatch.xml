@@ -1,0 +1,112 @@
+<beans:beans xmlns="http://www.springframework.org/schema/batch"
+	xmlns:beans="http://www.springframework.org/schema/beans" xmlns:bean="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans   
+    http://www.springframework.org/schema/beans/spring-beans.xsd  
+    http://www.springframework.org/schema/batch  
+    http://www.springframework.org/schema/batch/spring-batch-2.1.xsd">
+	<bean:bean id="jobRepository"
+		class="org.springframework.batch.core.repository.support.MapJobRepositoryFactoryBean">
+		<bean:property name="transactionManager" ref="transactionManager" />
+	</bean:bean>
+	<bean:bean id="transactionManager"
+		class="org.springframework.batch.support.transaction.ResourcelessTransactionManager">
+	</bean:bean>
+	<bean:bean id="jobLauncher"
+		class="org.springframework.batch.core.launch.support.SimpleJobLauncher">
+		<bean:property name="jobRepository" ref="jobRepository" />
+	</bean:bean>
+	
+	<job id="csvJob">
+		<step id="csvStep">
+			<tasklet transaction-manager="transactionManager">
+				<chunk reader="csvItemReader" writer="csvItemWriter"
+					processor="csvItemProcessor" commit-interval="1">
+				</chunk>
+			</tasklet>
+		</step>
+	</job>
+	
+	<bean:bean id="csvItemProcessor" class="cn.migu.tasklet.CsvItemProcessor" scope="step"></bean:bean>
+	<!-- csvItemReader配置 begin -->
+	<!-- 读取csv文件 -->
+	<!-- FlatFileItemReader读取一条记录由以下四步完成： 
+		1，从resource指定的文件中读取一条记录； 
+		2，lineTokenizer将这条记录按照delimiter分解成Fileset，每个字段的名字由names属性取得； 
+		3，将分解成的Fileset传递给fieldSetMapper，由其按照名字映射成Pojo对象； 
+		4，最终由FlatFileItemReader将映射成的Pojo对象返回，框架将返回的对象传递给Processor。 -->
+	<bean:bean id="csvItemReader"
+		class="org.springframework.batch.item.file.FlatFileItemReader" scope="step"> <!-- 此类主要用于Flat文件的读操作 -->
+		<bean:property name="resource" value="classpath:inputFile.csv" /><!-- 指定要读取的文件的位置 -->
+		<bean:property name="lineMapper"><!-- 将文件的每一行映射成一个Pojo对象 -->
+			<bean:bean
+				class="org.springframework.batch.item.file.mapping.DefaultLineMapper">
+				<bean:property name="lineTokenizer" ref="lineTokenizer" /><!-- 将文件的一行分解成一个 FieldSet -->
+				<bean:property name="fieldSetMapper"><!-- 由 fieldSetMapper映射成Pojo对象 -->
+					<bean:bean class="org.springframework.batch.item.file.mapping.BeanWrapperFieldSetMapper">
+						<bean:property name="prototypeBeanName" value="student"></bean:property><!-- 映射Pojo类的名字 -->
+					</bean:bean>
+				</bean:property>
+			</bean:bean>
+		</bean:property>
+	</bean:bean>
+
+	<bean:bean id="student" class="cn.migu.domain.Student"></bean:bean>
+
+	<!-- lineTokenizer -->
+	<bean:bean id="lineTokenizer"
+		class="org.springframework.batch.item.file.transform.DelimitedLineTokenizer">
+		<bean:property name="delimiter" value="," />
+		<bean:property name="names">
+			<bean:list>
+				<bean:value>ID</bean:value>
+				<bean:value>name</bean:value>
+				<bean:value>age</bean:value>
+				<bean:value>score</bean:value>
+			</bean:list>
+		</bean:property>
+	</bean:bean>
+	<!-- csvItemReader配置 end -->
+
+	<!-- csvItemWriter配置 begin -->
+	<!-- FlatFileItemWriter写一条记录也有以下四步完成： 
+		1，Processor传递过来一个对象给lineAggregator； 
+		2，lineAggregator将其这个对象转化成一个数组； 
+		3，再由lineAggregator的属性fieldExtractor将数组转化成按照delimiter分割一个字符串； 
+		4，将这个字符串输出。 -->
+	<!-- 写CSV文件 -->
+	<bean:bean id="csvItemWriter"
+		class="org.springframework.batch.item.file.FlatFileItemWriter" scope="step">
+		<bean:property name="resource" value="file:src/main/resources/outputFile.csv" /><!-- 要输出的文件的路径 -->
+		<bean:property name="lineAggregator">
+			<bean:bean
+				class="org.springframework.batch.item.file.transform.DelimitedLineAggregator">
+				<bean:property name="delimiter" value=","></bean:property><!-- 输出的字段以什么分割 -->
+				<bean:property name="fieldExtractor"><!-- 将Pojo对象组装成由Pojo对象的字段组成的一个字符串 -->
+					<bean:bean class="org.springframework.batch.item.file.transform.BeanWrapperFieldExtractor">
+						<bean:property name="names" value="name,age,score"></bean:property>
+					</bean:bean>
+				</bean:property>
+			</bean:bean>
+		</bean:property>
+	</bean:bean>
+	<!-- csvItemWriter配置 end -->
+
+
+
+
+	<job id="ioSampleJob">
+		<step id="step1" next="step2">
+			<tasklet ref="begin" transaction-manager="transactionManager"></tasklet>
+		</step>
+		<step id="step2">
+			<tasklet ref="helloWorld" transaction-manager="transactionManager"></tasklet>
+		</step>
+	</job>
+	<bean:bean id="begin" class="cn.migu.tasklet.MyFirstTasklet"
+		scope="step">
+	</bean:bean>
+	<bean:bean id="helloWorld" class="cn.migu.tasklet.HelloWorldTasklet">
+		<bean:property name="message" value=" Hello World!"></bean:property>
+	</bean:bean>
+</beans:beans>  

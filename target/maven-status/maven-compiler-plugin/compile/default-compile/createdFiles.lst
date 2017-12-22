@@ -1,0 +1,6 @@
+cn\migu\domain\Student.class
+cn\migu\tasklet\CsvReadWriteTest.class
+cn\migu\tasklet\MyFirstTasklet.class
+cn\migu\tasklet\AppMain.class
+cn\migu\tasklet\CsvItemProcessor.class
+cn\migu\tasklet\HelloWorldTasklet.class

@@ -1,0 +1,5 @@
+projectKey=cn.migu:springbatch
+serverUrl=http://10.5.2.243:9090/sonar
+dashboardUrl=http://10.5.2.243:9090/sonar/dashboard/index/cn.migu:springbatch
+ceTaskId=AVx8Q2KqTNTLbssziyG7
+ceTaskUrl=http://10.5.2.243:9090/sonar/api/ce/task?id=AVx8Q2KqTNTLbssziyG7

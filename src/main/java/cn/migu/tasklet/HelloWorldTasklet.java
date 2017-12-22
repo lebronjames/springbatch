@@ -1,0 +1,24 @@
+package cn.migu.tasklet;
+
+import org.springframework.batch.core.StepContribution;
+import org.springframework.batch.core.scope.context.ChunkContext;
+import org.springframework.batch.core.step.tasklet.Tasklet;
+import org.springframework.batch.repeat.RepeatStatus;
+
+public class HelloWorldTasklet  implements Tasklet{
+
+	private String message;
+	
+	public RepeatStatus execute(StepContribution arg0, ChunkContext arg1) throws Exception {
+		System.out.println(message);
+		return RepeatStatus.FINISHED;
+	}
+
+	public String getMessage() {
+		return message;
+	}
+
+	public void setMessage(String message) {
+		this.message = message;
+	}
+}
